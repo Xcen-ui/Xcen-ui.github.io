@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 核心响应式设置：确保在手机、平板、电脑上都能完美自适应 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>专属麻将计分器</title>
+    <style>
+        /* 基础重置与全局样式 */
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2dfdb 100%); /* 优雅的渐变背景 */
+            margin: 0; 
+            padding: 15px; 
+            color: #2c3e50; 
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        /* 核心容器：限制最大宽度，居中显示，完美适配电脑大屏 */
+        .container {
+            width: 100%;
+            max-width: 600px; /* 电脑端最大宽度，防止拉伸变形 */
+        }
+
+        h2 { 
+            text-align: center; 
+            color: #00695c; 
+            margin-bottom: 25px; 
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+        
+        /* 卡片样式优化 */
+        .card { 
+            background: rgba(255, 255, 255, 0.95); 
+            border-radius: 16px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08); 
+            transition: transform 0.2s;
+        }
+        
+        .input-group { 
+            margin-bottom: 18px; 
+            display: flex; 
+            align-items: center; 
+        }
+        .input-group label { 
+            width: 110px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            color: #455a64; 
+        }
+        .input-group input, .input-group select { 
+            flex: 1; 
+            padding: 14px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 10px; 
+            font-size: 16px; /* 防止iOS Safari自动缩放 */
+            background-color: #fafafa; 
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #26a69a;
+            background-color: #fff;
+        }
+        
+        /* 按钮样式全面升级 */
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 12px; 
+            background: linear-gradient(to right, #26a69a, #00897b); 
+            color: white; 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-top: 15px; 
+            box-shadow: 0 4px 12px rgba(0, 137, 123, 0.3); 
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:active { 
+            transform: translateY(2px) scale(0.98); 
+            box-shadow: 0 2px 6px rgba(0, 137, 123, 0.3); 
+        }
+        .btn-blue { background: linear-gradient(to right, #42a5f5, #1e88e5); box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3); }
+        .btn-blue:active { box-shadow: 0 2px 6px rgba(30, 136, 229, 0.3); }
+        .btn-gray { background: #b0bec5; box-shadow: none; }
+        .btn-gray:active { background: #90a4ae; transform: translateY(2px); }
+        
+        /* 表格样式优化 */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px; }
+        th, td { border: 1px solid #eceff1; padding: 14px 10px; text-align: center; }
+        th { background-color: #f1f8e9; color: #33691e; font-weight: bold; }
+        tr:nth-child(even) { background-color: #f9fbe7; }
+        
+        .dealer { color: #d32f2f; font-weight: bold; background-color: #ffebee; padding: 2px 6px; border-radius: 4px; font-size: 14px;}
+        .debt { color: #d32f2f; font-weight: bold; }
+        .profit { color: #388e3c; font-weight: bold; }
+        
+        .history-item { 
+            font-size: 15px; 
+            color: #546e7a; 
+            border-bottom: 1px dashed #cfd8dc; 
+            padding: 12px 0; 
+            line-height: 1.5;
+        }
+        .hidden { display: none; }
+        
+        /* 针对电脑端大屏的额外微调 */
+        @media (min-width: 768px) {
+            body { padding: 30px; }
+            .card { padding: 30px; }
+            h2 { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🀄 专属麻将计分器</h2>
+
+    <!-- 1. 设置区 -->
+    <div class="card" id="setup-area">
+        <h3 style="margin-top:0; border-bottom:2px solid #e0f2f1; padding-bottom:12px; color:#00796b;">⚙️ 开局设置</h3>
+        <div class="input-group">
+            <label>玩家1:</label>
+            <input type="text" id="p1_name" value="张三">
+        </div>
+        <div class="input-group">
+            <label>玩家2:</label>
+            <input type="text" id="p2_name" value="李四">
+        </div>
+        <div class="input-group">
+            <label>玩家3:</label>
+            <input type="text" id="p3_name" value="王五">
+        </div>
+        <div class="input-group">
+            <label>玩家4:</label>
+            <input type="text" id="p4_name" value="赵六">
+        </div>
+        <div class="input-group">
+            <label>初始分数:</label>
+            <input type="number" id="initial_chips" value="0">
+        </div>
+        <button onclick="initGame()">开始记账</button>
+    </div>
+
+    <!-- 2. 操作区 -->
+    <div class="card hidden" id="game-area">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; background:#e8f5e9; padding:12px; border-radius:10px;">
+            <h3 style="margin:0; border:none; color:#2e7d32;">🎮 第 <span id="round_num">1</span> 局</h3>
+            <span style="color:#e65100; font-weight:bold; font-size:15px;">连庄数: <span id="dealer_streak">0</span></span>
+        </div>
+        
+        <div class="input-group">
+            <label>当前庄家:</label>
+            <select id="dealer_select"></select>
+        </div>
+        
+        <hr style="border:0; border-top:1px solid #eceff1; margin:25px 0;">
+        
+        <h4 style="color:#1976d2; margin-bottom:15px;">💥 杠牌结算 (统一收3分)</h4>
+        <div class="input-group">
+            <label>开杠者(收):</label>
+            <select id="gang_winner"></select>
+        </div>
+        <div class="input-group">
+            <label>杠牌类型:</label>
+            <select id="gang_type">
+                <option value="straight">点杠 (点杠者包3分)</option>
+                <option value="concealed">暗杠/明杠 (三家各给1分)</option>
+            </select>
+        </div>
+        <div class="input-group" id="gang_loser_group">
+            <label>点杠者(付):</label>
+            <select id="gang_loser"></select>
+        </div>
+        <button class="btn-blue" onclick="recordGang()">确认杠牌</button>
+
+        <hr style="border:0; border-top:1px solid #eceff1; margin:25px 0;">
+
+        <h4 style="color:#388e3c; margin-bottom:15px;">🎉 自摸胡牌 (1分 + 摸码分)</h4>
+        <div class="input-group">
+            <label>胡牌者:</label>
+            <select id="win_winner"></select>
+        </div>
+        <div class="input-group">
+            <label>中码数量:</label>
+            <input type="number" id="win_ma" value="0" min="0">
+        </div>
+        <div style="font-size:14px; color:#78909c; margin-bottom:15px; background:#f1f8e9; padding:10px; border-radius:8px;">
+            💡 算账公式：每家给 = 1分(胡牌) + 中码数
+        </div>
+        <button onclick="recordWin()">确认自摸胡牌</button>
+        <button class="btn-gray" style="margin-top:15px;" onclick="recordDraw()">流局 / 荒庄 (庄家继续)</button>
+    </div>
+
+    <!-- 3. 统计区 -->
+    <div class="card hidden" id="stats-area">
+        <h3 style="margin-top:0; border-bottom:2px solid #e0f2f1; padding-bottom:12px; color:#00796b;">📊 实时账单</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>玩家</th>
+                    <th>当前分数</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody id="stats_body"></tbody>
+        </table>
+        
+        <h4 style="margin-top:30px; color:#455a64; border-bottom:1px solid #eceff1; padding-bottom:8px;">📜 最近流水</h4>
+        <div id="history_list" style="max-height:250px; overflow-y:auto; padding-right:5px;"></div>
+        <button class="btn-gray" style="margin-top:25px;" onclick="location.reload()">结束并重新开始</button>
+    </div>
+</div>
+
+<script>
+    let players = [];
+    let roundNum = 1;
+    let dealerStreak = 0;
+    let currentDealerIdx = 0;
+    let historyLog = [];
+
+    // 监听杠牌类型切换
+    document.getElementById('gang_type').addEventListener('change', function() {
+        document.getElementById('gang_loser_group').style.display = this.value === 'straight' ? 'flex' : 'none';
+    });
+
+    function initGame() {
+        const initialChips = parseInt(document.getElementById('initial_chips').value) || 0;
+        players = [
+            { name: document.getElementById('p1_name').value || "玩家1", score: initialChips },
+            { name: document.getElementById('p2_name').value || "玩家2", score: initialChips },
+            { name: document.getElementById('p3_name').value || "玩家3", score: initialChips },
+            { name: document.getElementById('p4_name').value || "玩家4", score: initialChips }
+        ];
+        
+        // 填充下拉菜单
+        const selects = ['dealer_select', 'gang_winner', 'gang_loser', 'win_winner'];
+        selects.forEach(id => {
+            const select = document.getElementById(id);
+            select.innerHTML = players.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+        });
+
+        document.getElementById('setup-area').classList.add('hidden');
+        document.getElementById('game-area').classList.remove('hidden');
+        document.getElementById('stats-area').classList.remove('hidden');
+        
+        updateStats();
+    }
+
+    function recordGang() {
+        const winnerIdx = parseInt(document.getElementById('gang_winner').value);
+        const gangType = document.getElementById('gang_type').value;
+
+        if (gangType === 'straight') {
+            // 点杠：点杠者包3分
+            const loserIdx = parseInt(document.getElementById('gang_loser').value);
+            if (winnerIdx === loserIdx) { alert("开杠者和点杠者不能是同一人！"); return; }
+            players[winnerIdx].score += 3;
+            players[loserIdx].score -= 3;
+            addHistory(`💥 点杠: [${players[loserIdx].name}] 包3分给 [${players[winnerIdx].name}]`);
+        } else {
+            // 暗杠/明杠：三家各给1分（共3分）
+            players.forEach((p, i) => {
+                if (i !== winnerIdx) {
+                    players[winnerIdx].score += 1;
+                    p.score -= 1;
+                }
+            });
+            addHistory(`💥 暗杠/明杠: [${players[winnerIdx].name}] 开杠，三家各付1分`);
+        }
+        updateStats();
+    }
+
+    function recordWin() {
+        const winnerIdx = parseInt(document.getElementById('win_winner').value);
+        const maCount = parseInt(document.getElementById('win_ma').value) || 0;
+
+        // 核心算账：每家给 = 1分(胡牌) + 中码数
+        const scorePerPerson = 1 + maCount;
+        const totalScore = scorePerPerson * 3;
+
+        players[winnerIdx].score += totalScore;
+        players.forEach((p, i) => {
+            if (i !== winnerIdx) {
+                p.score -= scorePerPerson;
+            }
+        });
+
+        let logMsg = `🎉 自摸: [${players[winnerIdx].name}] 胡牌`;
+        if (maCount > 0) logMsg += ` (中${maCount}码)`;
+        logMsg += `，每家付 ${scorePerPerson}分`;
+        addHistory(logMsg);
+        
+        // 换庄逻辑
+        if (winnerIdx !== currentDealerIdx) {
+            currentDealerIdx = winnerIdx;
+            dealerStreak = 0;
+            document.getElementById('dealer_select').value = currentDealerIdx;
+        } else {
+            dealerStreak++;
+        }
+
+        roundNum++;
+        updateStats();
+    }
+
+    function recordDraw() {
+        dealerStreak++;
+        addHistory(`🔄 流局: 庄家 [${players[currentDealerIdx].name}] 继续坐庄，连庄数+1`);
+        roundNum++;
+        updateStats();
+    }
+
+    function addHistory(msg) {
+        historyLog.unshift(msg); 
+        if (historyLog.length > 15) historyLog.pop(); 
+    }
+
+    function updateStats() {
+        document.getElementById('round_num').innerText = roundNum;
+        document.getElementById('dealer_streak').innerText = dealerStreak;
+        
+        const tbody = document.getElementById('stats_body');
+        tbody.innerHTML = players.map((p, i) => {
+            const status = p.score < 0 ? `<span class="debt">欠 ${-p.score}</span>` : (p.score > 0 ? `<span class="profit">赢 ${p.score}</span>` : "平");
+            const dealerTag = (i === currentDealerIdx) ? `<span class="dealer">庄</span>` : '';
+            return `<tr>
+                <td style="text-align:left; padding-left:15px; font-weight:bold;">${p.name} ${dealerTag}</td>
+                <td style="font-weight:bold; font-size:18px;">${p.score}</td>
+                <td>${status}</td>
+            </tr>`;
+        }).join('');
+
+        const historyDiv = document.getElementById('history_list');
+        historyDiv.innerHTML = historyLog.map(log => `<div class="history-item">${log}</div>`).join('');
+    }
+</script>
+</body>
+</html>
